@@ -6,6 +6,12 @@ namespace OrderService.Models
 {
     public class Cart
     {
+
+         public Cart()
+        {
+            CartItems = new List<CartItem>();
+        }
+
         [Key]
         public Guid Id { get; set; }
 
@@ -17,7 +23,7 @@ namespace OrderService.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public virtual required ICollection<CartItem> CartItems { get; set; }
+        public virtual ICollection<CartItem> CartItems { get; set; }
         
     }
 }
