@@ -99,6 +99,42 @@ export class UserController {
         message: 'Internal server error'
       });
     }
-
   };
+
+    getProfile = async (req: Request, res: Response): Promise<any> => {
+      try{
+        const userId = req.user.userId;
+  
+        const userProfile = await this.userService.getUserById(userId);
+
+        if(!userProfile){
+          return res.status(404).json({
+            success: false,
+            message: "Kullanıcı bulunamadı"
+          });
+        }
+
+        const { password: _, ...userInfoWithoutPassword } = userProfile;
+  
+        return res.status(200).json({
+          success: true,
+          message: 'Profil bilgileri getirildi.',
+          data: userInfoWithoutPassword
+        });
+        
+      }
+      catch(error){
+        console.error('Profil getirilemedi:', error);
+        if (error.message === 'Kullanıcı profili bulunamadı.') {
+          return res.status(404).json({
+            success: false,
+            message: 'Kullanıcı bulunamadı.'
+          });
+        }
+        return res.status(500).json({
+          success: false,
+          message: 'Internal server error'
+        });
+      }
+    }
 }

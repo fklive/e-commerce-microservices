@@ -58,4 +58,15 @@ export class UserService {
     }
     return user;
   }
+
+  async getUserById(userId: string) : Promise<User> {
+
+    const user = await this.userRepository.findOneBy( {id:userId});
+
+    if(!user) {
+      throw new Error("Kullanıcı profili bulunamadı.");
+    }
+    return user;
+    
+  }
 }
