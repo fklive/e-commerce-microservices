@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/user-service';
+import { generateToken } from '../utils/jwt';
 
 export class UserController {
   private userService: UserService;
@@ -16,7 +17,7 @@ export class UserController {
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ 
           success: false, 
-          message: 'All fields are required' 
+          message: 'Tüm alanlar dolu olmalı.' 
         });
       }
 
@@ -52,5 +53,52 @@ export class UserController {
         message: 'Internal server error'
       });
     }
+  };
+
+  login = async (req: Request, res: Response): Promise<any> => {
+    try{
+      const{email,password} = req.body;
+
+      if(!email || !password)
+      {
+        return res.status(400).json({
+          success: false,
+          message: 'Tüm alanlar dolu olmalı.'
+        });
+            }
+
+      const user = await this.userService.login({email,password});
+      const { password: _, ...userWithoutPassword } = user;
+
+      const token = generateToken(user);
+
+      return res.status(200).json({
+        success: true,
+        message: 'User registered successfully',
+        token: token,
+        data: userWithoutPassword
+      });
+    }
+    catch(error){
+      console.error('Login hatası:', error);
+      if (error.message === 'Kullanıcı bulunamadı.') {
+        return res.status(404).json({
+          success: false,
+          message: 'Kullanıcı bulunamadı.'
+        });
+      }
+      else if(error.message === "Geçersiz kullanıcı adı & şifre"){
+        return res.status(401).json({
+          success: false,
+          message: "Geçersiz kullanıcı adı & şifre"
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+
   };
 }

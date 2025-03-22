@@ -41,4 +41,21 @@ export class UserService {
     // Kullanıcıyı kaydetme
     return await this.userRepository.save(user);
   }
+
+  async login(userData : {
+    email: string;
+    password: string;
+  }): Promise<User> {
+
+    const user =  await this.userRepository.findOne({where: {email : userData.email}});
+    if(!user) {
+      throw new Error("Kullanıcı bulunamadı.");
+    }
+
+    const isMatch = bcrypt.compareSync(userData.password,user.password);
+    if(!isMatch){
+      throw new Error("Geçersiz kullanıcı adı & şifre");
+    }
+    return user;
+  }
 }
