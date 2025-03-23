@@ -18,69 +18,80 @@ export class UserService {
     phoneNumber: string;
     role?: UserRole;
   }): Promise<User> {
-    // E-posta kontrolü
-    const existingUser = await this.userRepository.findOne({
-      where: { email: userData.email }
-    });
+    try {
 
-    if (existingUser) {
-      throw new Error('Email already in use');
+
+      // E-posta kontrolü
+      const existingUser = await this.userRepository.findOne({
+        where: { email: userData.email }
+      });
+
+      if (existingUser) {
+        throw new Error('Email already in use');
+      }
+
+      // Şifreyi hash'leme
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+      // Yeni kullanıcı oluşturma
+      const user = this.userRepository.create({
+        ...userData,
+        password: hashedPassword,
+        role: userData.role || UserRole.CUSTOMER
+      });
+
+      // Kullanıcıyı kaydetme
+      return await this.userRepository.save(user);
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new Error('Email already in use');
+      }
+      console.error('Database error:', error);
+      throw new Error('Error while user created');
     }
 
-    // Şifreyi hash'leme
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(userData.password, salt);
-
-    // Yeni kullanıcı oluşturma
-    const user = this.userRepository.create({
-      ...userData,
-      password: hashedPassword,
-      role: userData.role || UserRole.CUSTOMER
-    });
-
-    // Kullanıcıyı kaydetme
-    return await this.userRepository.save(user);
   }
 
-  async login(userData : {
+  async login(userData: {
     email: string;
     password: string;
   }): Promise<User> {
 
-    const user =  await this.userRepository.findOne({where: {email : userData.email}});
-    if(!user) {
-      throw new Error("Kullanıcı bulunamadı.");
+    const user = await this.userRepository.findOne({ where: { email: userData.email } });
+    if (!user) {
+      throw new Error("Can't find user");
     }
 
-    const isMatch = bcrypt.compareSync(userData.password,user.password);
-    if(!isMatch){
-      throw new Error("Geçersiz kullanıcı adı & şifre");
+    const isMatch = bcrypt.compareSync(userData.password, user.password);
+    if (!isMatch) {
+      throw new Error("Unvalid username or password");
     }
     return user;
   }
 
-  async getUserById(userId: string) : Promise<User> {
+  async getUserById(userId: string): Promise<User> {
 
-    const user = await this.userRepository.findOneBy( {id:userId});
+    const user = await this.userRepository.findOneBy({ id: userId });
 
-    if(!user) {
-      throw new Error("Kullanıcı profili bulunamadı.");
+    if (!user) {
+      throw new Error("User profile can't find.");
     }
     return user;
-    
+
   }
 
   async updateUserProfile(userId: string, updateData: Partial<User>): Promise<User> {
 
     const user = await this.userRepository.findOneBy({ id: userId });
-    
+
     if (!user) {
-      throw new Error('Kullanıcı bulunamadı');
+      throw new Error("Can't find user");
     }
-    
+
     // Kullanıcı nesnesini güncellenecek verilerle birleştir
     const updatedUser = { ...user, ...updateData };
-    
+
     return await this.userRepository.save(updatedUser);
   }
 }

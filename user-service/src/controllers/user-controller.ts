@@ -18,7 +18,7 @@ export class UserController {
       if (!email || !password || !firstName || !lastName) {
         return res.status(400).json({ 
           success: false, 
-          message: 'Tüm alanlar dolu olmalı.' 
+          message: 'Email , password and name spaces must be valid.' 
         });
       }
 
@@ -111,7 +111,7 @@ export class UserController {
         if(!userProfile){
           return res.status(404).json({
             success: false,
-            message: "Kullanıcı bulunamadı"
+            message: "Can't find the user."
           });
         }
 
@@ -125,11 +125,11 @@ export class UserController {
         
       }
       catch(error){
-        console.error('Profil getirilemedi:', error);
+        console.error("Can't get the profile info:", error);
         if (error.message === 'Kullanıcı profili bulunamadı.') {
           return res.status(404).json({
             success: false,
-            message: 'Kullanıcı bulunamadı.'
+            message: "Can't find the user."
           });
         }
         return res.status(500).json({
@@ -159,7 +159,7 @@ export class UserController {
         if (Object.keys(fieldsToUpdate).length === 0) {
           return res.status(400).json({
             success: false,
-            message: 'En az bir alan güncellenmelidir'
+            message: "Already updated."
           });
         }
         
@@ -171,23 +171,23 @@ export class UserController {
         
         return res.status(200).json({
           success: true,
-          message: 'Profil başarıyla güncellendi',
+          message: 'Successfully updated',
           data: userWithoutPassword
         });
         
       } catch (error) {
-        console.error('Profil güncelleme hatası:', error);
+        console.error('Profile info update error:', error);
         
-        if (error.message === 'Kullanıcı bulunamadı') {
+        if (error.message === "Can't find the user.") {
           return res.status(404).json({
             success: false,
-            message: 'Kullanıcı bulunamadı'
+            message: "Can't find the user."
           });
         }
         
         return res.status(500).json({
           success: false,
-          message: 'Profil güncellenirken bir hata oluştu'
+          message: 'Error while profile info updated.'
         });
       }
     }
