@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { AppDataSource } from './config/database';
 import userRoutes from './routes/user-routes';
+import addressRoutes from './routes/address-routes';
 
 // Express uygulaması oluşturma
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Route'ları tanımlama
 app.use('/api/users', userRoutes);
+app.use('/api/users/address', addressRoutes);
 
 // Ana route
 app.get('/', (req, res) => {
