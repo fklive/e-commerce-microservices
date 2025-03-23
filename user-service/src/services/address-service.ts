@@ -1,4 +1,4 @@
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Address, AddressType } from '../models/address.entity';
 
@@ -92,4 +92,23 @@ export class AddressService {
     } 
     }
 
+    async deleteAddressById(userId: string, addressId: string): Promise<DeleteResult> {
+        try{
+            const address = await this.addressRepository.findOne({
+                where: {
+                  id: addressId,
+                  userId: userId  
+                }
+              });
+
+              if(!address)
+                throw new Error("Can't delete the address for this user.")
+            return await this.addressRepository.delete({id: addressId});
+     
+        }catch (error) {
+
+            console.error('Database error:', error);
+            throw new Error('Error while address saved.');
+    }
+}
 }

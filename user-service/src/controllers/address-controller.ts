@@ -118,4 +118,36 @@ export class AddressController {
         }
     }
 
+    deleteAddressById = async(req: Request, res: Response) :Promise<any> => {
+        try{
+            const userId = req.user.userId;
+            const addressId = req.params.id;
+
+            const deletedAddress = await this.addressService.deleteAddressById(userId,addressId);
+
+            return res.status(200).json({
+                success: true,
+                message: 'Address successfully deleted.',
+                data: deletedAddress
+              });
+        }
+        catch(error)
+        {
+            console.log("Transaction error.Can't delete the address",error);
+        
+            if(error.message === "Can't delete the address for this user.")
+            {
+               return res.status(404).json({
+                   success: false,
+                   message: "Can't delete address for this user."
+                 });
+            }
+   
+           return res.status(500).json({
+               success: false,
+               message: 'Internal server error'
+             });
+        }
+    }
+
 }

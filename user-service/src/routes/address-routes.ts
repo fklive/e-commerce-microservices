@@ -9,5 +9,6 @@ const addressController = new AddressController();
 router.post('/', authMiddleware, addressController.saveAddress);
 router.get('/', authMiddleware, addressController.getAddress);
 router.get('/:id',authMiddleware,addressController.getAddressById);
+router.delete('/:id',authMiddleware,addressController.deleteAddressById);
 
 export default router;
