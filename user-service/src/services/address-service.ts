@@ -71,44 +71,67 @@ export class AddressService {
     }
 
     async getAddressesById(userId: string, addressId: string): Promise<Address> {
-       try{
+        try {
 
-        const address = await this.addressRepository.findOne({
-            where: {
-              id: addressId,
-              userId: userId  
-            }
-          });
-        
-        if(!address)
-        throw new Error("Can't find the address for this user.")
-
-        return address;
-
-       }  catch (error) {
-
-        console.error('Database error:', error);
-        throw new Error('Error while address saved.');
-    } 
-    }
-
-    async deleteAddressById(userId: string, addressId: string): Promise<DeleteResult> {
-        try{
             const address = await this.addressRepository.findOne({
                 where: {
-                  id: addressId,
-                  userId: userId  
+                    id: addressId,
+                    userId: userId
                 }
-              });
+            });
 
-              if(!address)
-                throw new Error("Can't delete the address for this user.")
-            return await this.addressRepository.delete({id: addressId});
-     
-        }catch (error) {
+            if (!address)
+                throw new Error("Can't find the address for this user.")
+
+            return address;
+
+        } catch (error) {
 
             console.error('Database error:', error);
             throw new Error('Error while address saved.');
+        }
     }
-}
+
+    async updateAddressById(userId: string, addressId: string, updateData: Partial<Address>): Promise<Address> {
+        try {
+            const isAddressBelongTheSameUser = await this.addressRepository.findOne({
+                where: {
+                    id: addressId,
+                    userId: userId
+                }
+            });
+
+            if (!isAddressBelongTheSameUser)
+                throw new Error("Can't find the address for this user.")
+
+            const updateAddress = { ...isAddressBelongTheSameUser, ...updateData };
+
+            return await this.addressRepository.save(updateAddress);
+
+        }
+        catch (error) {
+            console.error('Database error:', error);
+            throw new Error('Error while address updated.');
+        }
+    }
+
+    async deleteAddressById(userId: string, addressId: string): Promise<DeleteResult> {
+        try {
+            const address = await this.addressRepository.findOne({
+                where: {
+                    id: addressId,
+                    userId: userId
+                }
+            });
+
+            if (!address)
+                throw new Error("Can't delete the address for this user.")
+            return await this.addressRepository.delete({ id: addressId });
+
+        } catch (error) {
+
+            console.error('Database error:', error);
+            throw new Error('Error while address saved.');
+        }
+    }
 }

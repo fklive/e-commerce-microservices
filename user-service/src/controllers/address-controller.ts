@@ -12,58 +12,58 @@ export class AddressController {
         this.addressService = new AddressService();
     }
 
-    saveAddress = async (req: Request, res: Response) : Promise<any> => {
-     
-     try{
-        const { street, city, country, postalCode, isDefault, addressType } = req.body;
-        const userId = req.user.userId; 
+    saveAddress = async (req: Request, res: Response): Promise<any> => {
 
-        if (!street || !city || !country) {
-            return res.status(400).json({
-              success: false,
-              message: 'Street, city and country field must be valid.'
+        try {
+            const { street, city, country, postalCode, isDefault, addressType } = req.body;
+            const userId = req.user.userId;
+
+            if (!street || !city || !country) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Street, city and country field must be valid.'
+                });
+            }
+
+            const address = await this.addressService.saveAddress({
+                userId,
+                street,
+                city,
+                country,
+                postalCode,
+                isDefault: isDefault === undefined ? true : isDefault,
+                addressType: addressType || AddressType.DELIVERY
             });
-          }
 
-      const address = await this.addressService.saveAddress({
-        userId,
-        street,
-        city,
-        country,
-        postalCode,
-        isDefault: isDefault === undefined ? true : isDefault,
-        addressType: addressType || AddressType.DELIVERY
-      });
+            const { userId: _, ...addressWithoutSensitiveInformation } = address
 
-      const {userId: _ , ...addressWithoutSensitiveInformation} = address
-
-      return res.status(201).json({
-        success: true,
-        message: 'Address info saved successfully.',
-        data: addressWithoutSensitiveInformation
-      });
-     }
-     catch(error){
-        console.log("Transaction error.Can't save the address:",error);
-
-        if (error.message.includes("foreign key constraint")) {
-            return res.status(400).json({
-              success: false,
-              message: 'Unvalid user.'
+            return res.status(201).json({
+                success: true,
+                message: 'Address info saved successfully.',
+                data: addressWithoutSensitiveInformation
             });
-          }
+        }
+        catch (error) {
+            console.log("Transaction error.Can't save the address:", error);
 
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-          });
-     }
+            if (error.message.includes("foreign key constraint")) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Unvalid user.'
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
     }
 
-    getAddress = async(req: Request, res: Response) : Promise<any> => {
-    
-        try{
-            const userId = req.user.userId; 
+    getAddress = async (req: Request, res: Response): Promise<any> => {
+
+        try {
+            const userId = req.user.userId;
 
             const addresses = await this.addressService.getAddressesByUserId(userId);
 
@@ -72,81 +72,124 @@ export class AddressController {
                 success: true,
                 message: 'Process work successfully.',
                 data: addresses
-              });
+            });
         }
-        catch(error)
-        {
-         console.log("Transaction error.Can't find the address",error);
+        catch (error) {
+            console.log("Transaction error.Can't find the address", error);
 
 
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-          });
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
         }
     }
 
-    getAddressById = async(req: Request, res: Response) : Promise<any> => {
-        try{
+    getAddressById = async (req: Request, res: Response): Promise<any> => {
+        try {
             const userId = req.user.userId;
             const addressId = req.params.id;
 
-            const addressById = await this.addressService.getAddressesById(userId,addressId);
+            const addressById = await this.addressService.getAddressesById(userId, addressId);
 
             return res.status(200).json({
                 success: true,
                 message: 'Process work successfully.',
                 data: addressById
-              });
+            });
         }
-        catch(error)
-        {
-         console.log("Transaction error.Can't find the address",error);
-        
-         if(error.message === "Can't find the address for this user.")
-         {
-            return res.status(404).json({
-                success: false,
-                message: "Can't find address for this user."
-              });
-         }
+        catch (error) {
+            console.log("Transaction error.Can't find the address", error);
 
-        return res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-          });
+            if (error.message === "Can't find the address for this user.") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Can't find address for this user."
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
         }
     }
 
-    deleteAddressById = async(req: Request, res: Response) :Promise<any> => {
-        try{
+    updateAddress = async (req: Request, res: Response): Promise<any> => {
+
+        try {
+            const userId = req.user.userId;
+            const addressId = req.params.id;
+            const updateData = req.body;
+            const allowedFields = ['street', 'city', 'country', 'postalCode', 'isDefault'];
+
+            const fieldsToUpdate: Partial<Address> = {};
+
+            allowedFields.forEach(field => {
+                if (field in updateData) {
+                    fieldsToUpdate[field as keyof Address] = updateData[field];
+                }
+            });
+
+            if (Object.keys(fieldsToUpdate).length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Already updated."
+                });
+            }
+
+            const updateAddress = await this.addressService.updateAddressById(userId, addressId, fieldsToUpdate);
+
+            return res.status(200).json({
+                success: true,
+                message: "Address updated successfully",
+                data: updateAddress
+            });
+        }
+        catch (error) {
+
+            if (error.message === "Can't find the address for this user.") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Can't find address for this user."
+                });
+            }
+
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+
+    }
+
+    deleteAddressById = async (req: Request, res: Response): Promise<any> => {
+        try {
             const userId = req.user.userId;
             const addressId = req.params.id;
 
-            const deletedAddress = await this.addressService.deleteAddressById(userId,addressId);
+            const deletedAddress = await this.addressService.deleteAddressById(userId, addressId);
 
             return res.status(200).json({
                 success: true,
                 message: 'Address successfully deleted.',
                 data: deletedAddress
-              });
+            });
         }
-        catch(error)
-        {
-            console.log("Transaction error.Can't delete the address",error);
-        
-            if(error.message === "Can't delete the address for this user.")
-            {
-               return res.status(404).json({
-                   success: false,
-                   message: "Can't delete address for this user."
-                 });
+        catch (error) {
+            console.log("Transaction error.Can't delete the address", error);
+
+            if (error.message === "Can't delete the address for this user.") {
+                return res.status(404).json({
+                    success: false,
+                    message: "Can't delete address for this user."
+                });
             }
-   
-           return res.status(500).json({
-               success: false,
-               message: 'Internal server error'
-             });
+
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
         }
     }
 
