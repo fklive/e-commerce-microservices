@@ -2,6 +2,7 @@
 node_modules/
 npm-debug.log
 dist/
+Tests/
 *.env
 
 # .NET
@@ -19,3 +20,4 @@ docker-data/
 
 # Diğerleri
 .DS_Store
+test-db.ts
