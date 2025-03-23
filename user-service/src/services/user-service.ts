@@ -69,4 +69,18 @@ export class UserService {
     return user;
     
   }
+
+  async updateUserProfile(userId: string, updateData: Partial<User>): Promise<User> {
+
+    const user = await this.userRepository.findOneBy({ id: userId });
+    
+    if (!user) {
+      throw new Error('Kullanıcı bulunamadı');
+    }
+    
+    // Kullanıcı nesnesini güncellenecek verilerle birleştir
+    const updatedUser = { ...user, ...updateData };
+    
+    return await this.userRepository.save(updatedUser);
+  }
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/user-service';
 import { generateToken } from '../utils/jwt';
+import { User } from '../models/user.entity';
 
 export class UserController {
   private userService: UserService;
@@ -134,6 +135,59 @@ export class UserController {
         return res.status(500).json({
           success: false,
           message: 'Internal server error'
+        });
+      }
+    }
+
+    updateProfile = async (req: Request, res: Response) : Promise<any> => {
+      try {
+        const userId = req.user.userId; 
+        const updateData = req.body;    
+        
+        // Güncellenebilir alanları belirle ve filtrele
+        const allowedFields = ['firstName', 'lastName', 'phoneNumber'];
+        
+        const fieldsToUpdate: Partial<User> = {};
+        
+        allowedFields.forEach(field => {
+          if (field in updateData) {
+            fieldsToUpdate[field as keyof User] = updateData[field];
+          }
+        });
+        
+        // Güncellenecek alan yoksa hata dön
+        if (Object.keys(fieldsToUpdate).length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'En az bir alan güncellenmelidir'
+          });
+        }
+        
+        // Servis katmanını çağır
+        const updatedUser = await this.userService.updateUserProfile(userId, fieldsToUpdate);
+        
+        // Hassas verileri çıkar
+        const { password, ...userWithoutPassword } = updatedUser;
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Profil başarıyla güncellendi',
+          data: userWithoutPassword
+        });
+        
+      } catch (error) {
+        console.error('Profil güncelleme hatası:', error);
+        
+        if (error.message === 'Kullanıcı bulunamadı') {
+          return res.status(404).json({
+            success: false,
+            message: 'Kullanıcı bulunamadı'
+          });
+        }
+        
+        return res.status(500).json({
+          success: false,
+          message: 'Profil güncellenirken bir hata oluştu'
         });
       }
     }
