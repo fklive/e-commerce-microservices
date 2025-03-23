@@ -7,5 +7,7 @@ const router = Router();
 const addressController = new AddressController();
 
 router.post('/', authMiddleware, addressController.saveAddress);
+router.get('/', authMiddleware, addressController.getAddress);
+router.get('/:id',authMiddleware,addressController.getAddressById);
 
 export default router;
