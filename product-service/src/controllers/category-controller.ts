@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { CategoryService } from '../services/category-service';
+import { json } from 'stream/consumers';
 
 
 export class CategoryController {
@@ -43,4 +44,27 @@ export class CategoryController {
         }
     } 
 
+    getCategories = async (req: Request, res: Response) : Promise<any> => {
+        try {
+
+            const categories = await this.categoryService.getCategories();
+   
+            return res.status(200).json({
+                success : true,
+                data: categories,
+                message : "Kategori getirme işlemi başarılı!"
+            });
+            
+        } catch (error) {
+            console.log("Kategoriler getirilemedi : ",error);
+        
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+              });
+        }
+    }
+
 }
+
+  

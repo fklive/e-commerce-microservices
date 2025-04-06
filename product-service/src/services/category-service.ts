@@ -24,15 +24,28 @@ export class CategoryService {
             const savedCategory = await category.save();
             return savedCategory;
         } catch (error) {
-            console.log("Hata : ",error);
+            console.log("Hata : ",error)
             // MongoDB duplicate key hatası
             if (error.code === 11000) {
-                throw new Error('Bu isimde bir ürün zaten mevcut');
+                throw new Error('Bu isimde bir kategori zaten mevcut');
             }
 
             throw error;
         }
 
+    }
+
+    async getCategories () : Promise<ICategory[]> {
+        try {
+
+            const categories = await Category.find();
+            return categories;
+            
+        } catch (error) {
+            console.log("Hata : ",error)
+
+            throw error;
+        }
     }
 
 }
