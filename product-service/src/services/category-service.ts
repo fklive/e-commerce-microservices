@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import Category, { ICategory } from '../models/category-model';
+import { error } from 'console';
 
 export class CategoryService {
 
@@ -59,6 +60,30 @@ export class CategoryService {
         } catch (error) {
             console.error(`Kategori getirilemedi - ID: ${categoryId}`, error);
 
+            throw error;
+        }
+
+    }
+
+    async updateCategoryById (categoryId: string, updateData: Partial<ICategory>) : Promise<ICategory | null> {
+
+        try {
+
+        const category = await Category.findById(categoryId);
+
+        if(!category){
+            throw new Error("Hatalı kategori");
+        }
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+            categoryId,
+            updateData,
+            { new: true }
+          );    
+        return updatedCategory;
+          
+        } catch (error) {
+            console.error("Kategori güncelleme service hatası:", error);
             throw error;
         }
 

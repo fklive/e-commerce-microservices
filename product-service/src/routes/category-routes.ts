@@ -9,5 +9,6 @@ const categoryController = new CategoryController();
 router.post('/', authMiddleware, checkRole(['admin']), categoryController.createCategory );
 router.get('/', categoryController.getCategories );
 router.get('/:id', categoryController.getCategoryById );
+router.put('/:id', authMiddleware, checkRole(['admin']), categoryController.updateCategory);
 
 export default router;
