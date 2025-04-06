@@ -8,6 +8,7 @@
     "skipLibCheck": true,                                 /* Skip type checking all .d.ts files. */
     "outDir": "./dist",
     "rootDir": "./src",
+    "useUnknownInCatchVariables": false,
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
