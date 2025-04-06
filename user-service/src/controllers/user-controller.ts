@@ -12,7 +12,7 @@ export class UserController {
 
   register = async (req: Request, res: Response): Promise<any> => {
     try {
-      const { email, password, firstName, lastName, phoneNumber } = req.body;
+      const { email, password, firstName, lastName, phoneNumber, role } = req.body;
 
       // Gerekli alanların kontrolü
       if (!email || !password || !firstName || !lastName) {
@@ -28,7 +28,8 @@ export class UserController {
         password,
         firstName,
         lastName,
-        phoneNumber: phoneNumber || ''
+        phoneNumber: phoneNumber || '',
+        role
       });
 
       // Hassas verileri çıkarma
@@ -75,7 +76,7 @@ export class UserController {
 
       return res.status(200).json({
         success: true,
-        message: 'User registered successfully',
+        message: 'User logged in successfully',
         token: token,
         data: userWithoutPassword
       });
