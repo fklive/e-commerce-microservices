@@ -48,4 +48,20 @@ export class CategoryService {
         }
     }
 
+    async getCategoryById(categoryId : string) : Promise<ICategory | null> {
+       
+        try {
+
+            const categoryById = await Category.findById(categoryId).populate('parentId','name');
+
+            return categoryById;
+            
+        } catch (error) {
+            console.error(`Kategori getirilemedi - ID: ${categoryId}`, error);
+
+            throw error;
+        }
+
+    }
+
 }

@@ -8,5 +8,6 @@ const categoryController = new CategoryController();
 
 router.post('/', authMiddleware, checkRole(['admin']), categoryController.createCategory );
 router.get('/', categoryController.getCategories );
+router.get('/:id', categoryController.getCategoryById );
 
 export default router;

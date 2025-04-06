@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CategoryService } from '../services/category-service';
 import { json } from 'stream/consumers';
+import mongoose from 'mongoose';
 
 
 export class CategoryController {
@@ -57,6 +58,44 @@ export class CategoryController {
             
         } catch (error) {
             console.log("Kategoriler getirilemedi : ",error);
+        
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+              });
+        }
+    }
+
+    getCategoryById = async (req: Request, res: Response) : Promise<any> => {
+        try {
+
+            const categoryId = req.params.id;
+
+            if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+                return res.status(400).json({
+                  success: false,
+                  message: "Geçersiz kategori ID formatı"
+                });
+              }
+
+            const category = await this.categoryService.getCategoryById(categoryId);
+
+            if (!category) {
+                return res.status(404).json({
+                  success: false,
+                  message: "Kategori bulunamadı"
+                });
+              }
+              
+              return res.status(200).json({
+                success: true,
+                data: category,
+                message: "Kategori başarıyla getirildi"
+              });
+
+            
+        } catch (error) {
+            console.log("Kategori getirilemedi : ",error);
         
             return res.status(500).json({
                 success: false,
